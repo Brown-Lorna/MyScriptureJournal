@@ -1,0 +1,88 @@
+﻿@{ 
+    var book = "";
+    var chapter = "";
+    var verse = "";
+    var notes = "";
+    var Id = "";
+
+    if (!IsPost)
+    {
+        if(!Request.QueryString["ID"].IsEmpty() && Request.QueryString["ID"].IsInt())
+        {
+            Id = Request.QueryString["ID"];
+            var db = Database.Open("WebScriptureJournal");
+            var dbCommand = "SELECT * FROM Scriptures WHERE ID = @0";
+            var row = db.QuerySingle(dbCommand, Id);
+
+            if (row != null)
+            {
+                book = row.Book;
+                chapter = row.Chapter;
+                verse = row.Verse;
+                notes = row.Notes;
+            }
+            else
+            {
+                Validation.AddFormError("No scripture was found for that ID.");
+            }
+        }
+        else
+        {
+            Validation.AddFormError("No scripture was selected.");
+        }
+    }
+    if(IsPost && !Request["buttonDelete"].IsEmpty())
+    {
+        Id = Request.Form["Id"];
+        var db = Database.Open("WebScriptureJournal");
+        var deleteCommand = "DELETE FROM Scriptures WHERE ID = @0";
+        db.Execute(deleteCommand, Id);
+        Response.Redirect("~/ScriptureJournal");
+    }
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delete a Scripture Journal Entry</title>
+    <link href="https://fonts.googleapis.com/css?family=Crimson+Text|Kaushan+Script" rel="stylesheet" type="text/css">
+    <link href="~/Styles/MainStyleSheet.css" rel="stylesheet" />
+
+</head>
+<body>
+    <h1>Delete a Scripture Journal Entry</h1>
+    @Html.ValidationSummary()
+
+    <form method="post">
+        <fieldset>
+            <legend>Scripture Information</legend>
+
+            <p>
+                <span>Book:</span>
+                <span>@book</span>
+            </p>
+            <p>
+                <span>Chapter:</span>
+                <span>@chapter</span>
+            </p>
+            <p>
+                <span>Verse:</span>
+                <span>@verse</span>
+            </p>
+            <p>
+                <span>Notes:</span>
+                <span>@notes</span>
+            </p>
+
+            <input type="hidden" name="Id" value="@Id" />
+            
+            <p>
+                <input type="submit" name="buttonDelete" value="Delete Scripture" />
+            </p>
+
+        </fieldset>
+        <p>
+            <a href="~/ScriptureJournal.cshtml">Return to Scripture Journal</a>
+        </p>
+    </form>
+</body>
+</html>
